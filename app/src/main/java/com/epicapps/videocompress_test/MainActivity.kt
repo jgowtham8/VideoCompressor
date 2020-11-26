@@ -5,10 +5,12 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
-import androidx.appcompat.app.AppCompatActivity
+import android.media.MediaMetadataRetriever
+import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -18,6 +20,7 @@ import com.abedelazizshe.lightcompressorlibrary.VideoQuality
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 import java.util.concurrent.ThreadLocalRandom
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -36,11 +39,16 @@ class MainActivity : AppCompatActivity() {
         setupUI()
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_VIDEO_CAPTURE) {
             if (resultCode == Activity.RESULT_OK) {
-                startCompress()
+                btnCompressVideo?.isEnabled = true
+                val size = (recordingVideoFile?.length()!!) / (1024 * 1024)
+                tvSelectedVideoSize?.text = "Original Size : " + size + "MB"
+
+                tvSelectedVideoLength?.text = "Duration : " + getDuration(recordingVideoFile!!)
             }
         }
     }
@@ -63,6 +71,16 @@ class MainActivity : AppCompatActivity() {
 
             }
         }
+    }
+
+    private fun getDuration(file: File): String? {
+        val retriever = MediaMetadataRetriever()
+        retriever.setDataSource(this, Uri.fromFile(file))
+        val time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+        val timeInMilliSec: Long? = time?.toLong()
+        retriever.release()
+
+        return timeInMilliSec?.toInt()?.toFileDuration()
     }
 
     private fun setupUI(){
@@ -116,6 +134,9 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this@MainActivity, "finished", Toast.LENGTH_SHORT).show()
                 videoView?.setVideoPath(compressingVideoFile?.absolutePath)
                 videoView?.start()
+
+                val size = (compressingVideoFile?.length()!!) / (1024 * 1024)
+                tvCompressedVideoSize?.text = "Compressed Size : " + size + "MB"
             }
         }, VideoQuality.MEDIUM, isMinBitRateEnabled = false, keepOriginalResolution = true)
     }
@@ -140,5 +161,7 @@ class MainActivity : AppCompatActivity() {
             startActivityForResult(takeVideoIntent, REQUEST_VIDEO_CAPTURE)
             //}
         }
+
+        btnCompressVideo?.isEnabled = false
     }
 }
