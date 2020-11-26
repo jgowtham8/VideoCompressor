@@ -1,15 +1,20 @@
 package com.epicapps.videocompress_test
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import com.abedelazizshe.lightcompressorlibrary.CompressionListener
+import com.abedelazizshe.lightcompressorlibrary.VideoCompressor
+import com.abedelazizshe.lightcompressorlibrary.VideoQuality
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 import java.util.concurrent.ThreadLocalRandom
@@ -17,6 +22,7 @@ import java.util.concurrent.ThreadLocalRandom
 class MainActivity : AppCompatActivity() {
 
     private var recordingVideoFile: File? = null
+    private var compressingVideoFile: File? = null
 
     companion object {
         private const val REQUEST_RECORD_VIDEO_PERMISSION = 100
@@ -34,7 +40,7 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_VIDEO_CAPTURE) {
             if (resultCode == Activity.RESULT_OK) {
-                //uploadFileAfterUserValidation(recordingVideoFile!!, subCampaignId!!, true)
+                startCompress()
             }
         }
     }
@@ -81,9 +87,37 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
+    @SuppressLint("SetTextI18n")
     private fun startCompress() {
+        val randomNo: Int = ThreadLocalRandom.current().nextInt()
+        compressingVideoFile =
+            File("${externalCacheDir?.absolutePath}/video$randomNo.mp4")
 
+        VideoCompressor.start(recordingVideoFile?.absolutePath!!, compressingVideoFile?.absolutePath!!, object : CompressionListener{
+            override fun onCancelled() {
+                Toast.makeText(this@MainActivity, "Cancelled", Toast.LENGTH_SHORT).show()
+            }
+
+            override fun onFailure(failureMessage: String) {
+                Toast.makeText(this@MainActivity, "Failed", Toast.LENGTH_SHORT).show()
+            }
+
+            override fun onProgress(percent: Float) {
+                runOnUiThread {
+                    tvCompressPercentage?.text = percent.toInt().toString() + "%"
+                }
+            }
+
+            override fun onStart() {
+                Toast.makeText(this@MainActivity, "Compression started", Toast.LENGTH_SHORT).show()
+            }
+
+            override fun onSuccess() {
+                Toast.makeText(this@MainActivity, "finished", Toast.LENGTH_SHORT).show()
+                videoView?.setVideoPath(compressingVideoFile?.absolutePath)
+                videoView?.start()
+            }
+        }, VideoQuality.MEDIUM, isMinBitRateEnabled = false, keepOriginalResolution = true)
     }
 
     private fun recordVideo() {
