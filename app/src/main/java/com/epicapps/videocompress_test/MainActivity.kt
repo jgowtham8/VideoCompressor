@@ -49,7 +49,7 @@ class MainActivity : AppCompatActivity() {
                 val size = (recordingVideoFile?.length()!!) / (1024 * 1024)
                 tvSelectedVideoSize?.text = "Original Size : " + size + "MB"
 
-                tvSelectedVideoLength?.text = "Duration : " + getDuration(recordingVideoFile!!)
+                tvSelectedVideoLength?.text = "Duration : " + getDuration(recordingVideoFile!!)?.take(7)
             }
         }
     }
@@ -143,7 +143,7 @@ class MainActivity : AppCompatActivity() {
                 val size = (compressingVideoFile?.length()!!) / (1024 * 1024)
                 tvCompressedVideoSize?.text = "Compressed Size : " + size + "MB"
             }
-        }, VideoQuality.MEDIUM, isMinBitRateEnabled = false, keepOriginalResolution = true)
+        }, VideoQuality.LOW, isMinBitRateEnabled = true, keepOriginalResolution = false)
     }
 
     private fun recordVideo() {
