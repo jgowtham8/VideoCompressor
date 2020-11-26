@@ -25,11 +25,12 @@ import java.util.concurrent.ThreadLocalRandom
 class MainActivity : AppCompatActivity() {
 
     private var recordingVideoFile: File? = null
-    private var compressingVideoFile: File? = null
 
     companion object {
         private const val REQUEST_RECORD_VIDEO_PERMISSION = 100
         private const val REQUEST_VIDEO_CAPTURE = 101
+
+        var compressingVideoFile: File? = null
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -88,6 +89,11 @@ class MainActivity : AppCompatActivity() {
             startCompress()
         }
 
+        btnPlay.setOnClickListener {
+            val intent = Intent(this, PlayActivity::class.java)
+            startActivity(intent)
+        }
+
         btnRecordVideo.setOnClickListener {
             if (ContextCompat.checkSelfPermission(
                     this@MainActivity,
@@ -132,8 +138,7 @@ class MainActivity : AppCompatActivity() {
 
             override fun onSuccess() {
                 Toast.makeText(this@MainActivity, "finished", Toast.LENGTH_SHORT).show()
-                videoView?.setVideoPath(compressingVideoFile?.absolutePath)
-                videoView?.start()
+                btnPlay?.isEnabled = true
 
                 val size = (compressingVideoFile?.length()!!) / (1024 * 1024)
                 tvCompressedVideoSize?.text = "Compressed Size : " + size + "MB"

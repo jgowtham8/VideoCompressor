@@ -40,9 +40,12 @@
         android:id="@+id/tvCompressedVideoSize"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
-    <VideoView
-        android:id="@+id/videoView"
+    <Button
+        android:id="@+id/btnPlay"
         android:layout_width="match_parent"
-        android:layout_height="300dp"/>
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:enabled="false"
+        android:text="Play"/>
 
 </LinearLayout>
