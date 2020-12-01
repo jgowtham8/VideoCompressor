@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity() {
         if (requestCode == REQUEST_VIDEO_CAPTURE) {
             if (resultCode == Activity.RESULT_OK) {
                 btnCompressVideo?.isEnabled = true
-                val size = (recordingVideoFile?.length()!!) / (1024 * 1024)
+                val size = (recordingVideoFile?.length()!!) / (1000 * 1000)
                 tvSelectedVideoSize?.text = "Original Size : " + size + "MB"
 
                 tvSelectedVideoLength?.text = "Duration : " + getDuration(recordingVideoFile!!)?.take(7)
@@ -117,35 +117,33 @@ class MainActivity : AppCompatActivity() {
         compressingVideoFile =
             File("${externalCacheDir?.absolutePath}/video$randomNo.mp4")
 
-        Thread(Runnable {
-            VideoCompressor.start(recordingVideoFile?.absolutePath!!, compressingVideoFile?.absolutePath!!, object : CompressionListener{
-                override fun onCancelled() {
-                    Toast.makeText(this@MainActivity, "Cancelled", Toast.LENGTH_SHORT).show()
-                }
+        VideoCompressor.start(recordingVideoFile?.absolutePath!!, compressingVideoFile?.absolutePath!!, object : CompressionListener{
+            override fun onCancelled() {
+                Toast.makeText(this@MainActivity, "Cancelled", Toast.LENGTH_SHORT).show()
+            }
 
-                override fun onFailure(failureMessage: String) {
-                    Toast.makeText(this@MainActivity, "Failed", Toast.LENGTH_SHORT).show()
-                }
+            override fun onFailure(failureMessage: String) {
+                Toast.makeText(this@MainActivity, "Failed", Toast.LENGTH_SHORT).show()
+            }
 
-                override fun onProgress(percent: Float) {
-                    runOnUiThread {
-                        tvCompressPercentage?.text = percent.toInt().toString() + "%"
-                    }
+            override fun onProgress(percent: Float) {
+                runOnUiThread {
+                    tvCompressPercentage?.text = percent.toInt().toString() + "%"
                 }
+            }
 
-                override fun onStart() {
-                    Toast.makeText(this@MainActivity, "Compression started", Toast.LENGTH_SHORT).show()
-                }
+            override fun onStart() {
+                Toast.makeText(this@MainActivity, "Compression started", Toast.LENGTH_SHORT).show()
+            }
 
-                override fun onSuccess() {
-                    Toast.makeText(this@MainActivity, "finished", Toast.LENGTH_SHORT).show()
-                    btnPlay?.isEnabled = true
+            override fun onSuccess() {
+                Toast.makeText(this@MainActivity, "finished", Toast.LENGTH_SHORT).show()
+                btnPlay?.isEnabled = true
 
-                    val size = (compressingVideoFile?.length()!!) / (1024 * 1024)
-                    tvCompressedVideoSize?.text = "Compressed Size : " + size + "MB"
-                }
-            }, VideoQuality.LOW, isMinBitRateEnabled = true, keepOriginalResolution = false)
-        }).start()
+                val size = (compressingVideoFile?.length()!!) / (1000 * 1000)
+                tvCompressedVideoSize?.text = "Compressed Size : " + size + "MB"
+            }
+        }, VideoQuality.MEDIUM, isMinBitRateEnabled = true, keepOriginalResolution = false)
     }
 
     private fun recordVideo() {
